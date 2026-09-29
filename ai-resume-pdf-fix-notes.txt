@@ -1,0 +1,19 @@
+Fix summary (Resume PDF support)
+
+1) Frontend: ResumeUpload.jsx
+- Replaced direct axios call with parseResumePdf(file)
+- Allows PDFs based on MIME or extension
+
+2) Frontend: Practice.jsx
+- Added PDF parsing support
+- For PDFs, it calls parseResumePdf(file) and sets resumeText to extracted text
+
+3) Frontend: frontend/src/services/resumeParser.js
+- Added helper that POSTs multipart/form-data to /api/parse-resume
+
+4) Backend (already present)
+- backend/server.js already defines POST /api/parse-resume using multer(memoryStorage) + pdfreader
+
+Known issue to watch:
+- PDFs that produce empty text will show: Could not extract text...
+

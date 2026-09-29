@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: interviewiq-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: interviewiq
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - interviewiq-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: interviewiq-backend
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://root:password@mongodb:27017/interviewiq
+      NODE_ENV: development
+      PORT: 5000
+    depends_on:
+      - mongodb
+    networks:
+      - interviewiq-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: interviewiq-ai
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URI: mongodb://root:password@mongodb:27017/interviewiq
+      BACKEND_URL: http://backend:5000
+      SERVICE_PORT: 8000
+    depends_on:
+      - mongodb
+      - backend
+    networks:
+      - interviewiq-network
+    volumes:
+      - ./ai-service:/app
+
+volumes:
+  mongodb_data:
+
+networks:
+  interviewiq-network:
+    driver: bridge
